@@ -94,7 +94,7 @@ def extract_fields(text):
         'order_date': order_date,
        
         'product_description': prod_desc,
-        'price,hsn': price
+        'price': price hsn 
     }
 
 def insert_customer(data):
@@ -162,6 +162,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
