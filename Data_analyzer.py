@@ -68,7 +68,7 @@ def extract_fields(text):
     
     # Product description and price
     prod_desc = ""
-    price = ""
+    price_hsn = ""
     lines = text.split('\n')
     for i, line in enumerate(lines):
         # Product Description
@@ -94,7 +94,7 @@ def extract_fields(text):
         'order_date': order_date,
        
         'product_description': prod_desc,
-        'price hsn ': price_hsn,
+        'price_hsn ': price_hsn,
     }
 
 def insert_customer(data):
@@ -162,6 +162,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
