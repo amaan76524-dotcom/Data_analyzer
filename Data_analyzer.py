@@ -19,7 +19,7 @@ def init_db():
             pincode TEXT,
             order_no TEXT,
             order_date TEXT,
-            phone TEXT,
+           
             product_description TEXT,
             price TEXT
         );
@@ -65,9 +65,6 @@ def extract_fields(text):
     # Order date
     date_match = re.search(r'Order Date\s*([0-9.]+)', text)
     order_date = date_match.group(1) if date_match else ''
-
-    # Phone (blank)
-    phone = ''
     
     # Product description and price
     prod_desc = ""
@@ -165,4 +162,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
