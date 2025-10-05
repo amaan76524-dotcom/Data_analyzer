@@ -4,7 +4,9 @@ import sqlite3
 import re
 import os
 
+
 DB_NAME = 'customers.db'
+
 
 def init_db():
     conn = sqlite3.connect(DB_NAME)
@@ -19,13 +21,13 @@ def init_db():
             pincode TEXT,
             order_no TEXT,
             order_date TEXT,
-           
             product_description TEXT,
             price TEXT
         );
     ''')
     conn.commit()
     conn.close()
+
 
 def extract_fields(text):
     # Extract Name
@@ -84,6 +86,7 @@ def extract_fields(text):
                     price = next_line
                     break
 
+
     return {
         'name': name,
         'address': address_block,
@@ -92,17 +95,18 @@ def extract_fields(text):
         'pincode': pincode,
         'order_no': order_no,
         'order_date': order_date,
-       
+        
         'product_description': prod_desc,
-        'price ': price,
+        'price': price,
     }
+
 
 def insert_customer(data):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute('''INSERT INTO customers (
-        name, address, city, state, pincode, order_no, order_date, phone, product_description, price
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);''', (
+        name, address, city, state, pincode, order_no, order_date, product_description, price
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);''', (
         data['name'], data['address'], data['city'], data['state'],
         data['pincode'], data['order_no'], data['order_date'], 
         data['product_description'], data['price']
@@ -110,15 +114,17 @@ def insert_customer(data):
     conn.commit()
     conn.close()
 
+
 def get_all_customers():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute('''SELECT name, address, city, state, pincode,
-                        order_no, order_date, phone, product_description, price FROM customers
+                        order_no, order_date, product_description, price FROM customers
                  ORDER BY id DESC;''')
     rows = c.fetchall()
     conn.close()
     return rows
+
 
 def main():
     st.set_page_config(page_title='Meesho Customer App', layout='wide')
@@ -155,13 +161,16 @@ def main():
         st.table([{
             'Name': x[0], 'Address': x[1], 'City': x[2], 'State': x[3], 'Pincode': x[4],
             'Order No': x[5], 'Order Date': x[6], 
-            'Product Description': x[8], 'Price': x[9]
+            'Product Description': x[7], 'Price': x[8]
         } for x in customers])
     else:
         st.info('No customer data saved yet.')
 
+
 if __name__ == '__main__':
     main()
+
+
 
 
 
