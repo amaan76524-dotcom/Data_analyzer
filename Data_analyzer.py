@@ -68,7 +68,7 @@ def extract_fields(text):
     
     # Product description and price
     prod_desc = ""
-    price_hsn = ""
+    price = ""
     lines = text.split('\n')
     for i, line in enumerate(lines):
         # Product Description
@@ -162,6 +162,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
