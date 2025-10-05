@@ -92,7 +92,7 @@ def extract_fields(text):
         'pincode': pincode,
         'order_no': order_no,
         'order_date': order_date,
-        'phone': phone,
+       
         'product_description': prod_desc,
         'price': price
     }
@@ -104,7 +104,7 @@ def insert_customer(data):
         name, address, city, state, pincode, order_no, order_date, phone, product_description, price
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);''', (
         data['name'], data['address'], data['city'], data['state'],
-        data['pincode'], data['order_no'], data['order_date'], data['phone'],
+        data['pincode'], data['order_no'], data['order_date'], 
         data['product_description'], data['price']
     ))
     conn.commit()
@@ -154,7 +154,7 @@ def main():
     if customers:
         st.table([{
             'Name': x[0], 'Address': x[1], 'City': x[2], 'State': x[3], 'Pincode': x[4],
-            'Order No': x[5], 'Order Date': x[6], 'Phone': x[7],
+            'Order No': x[5], 'Order Date': x[6], 
             'Product Description': x[8], 'Price': x[9]
         } for x in customers])
     else:
@@ -162,5 +162,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
