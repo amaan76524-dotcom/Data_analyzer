@@ -6,7 +6,6 @@ import os
 
 DB_NAME = 'customers.db'
 
-
 def init_db():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -20,22 +19,20 @@ def init_db():
             pincode TEXT,
             order_no TEXT,
             order_date TEXT,
-            phone TEXT
+            phone TEXT,
+            product_description TEXT,
+            price TEXT
         );
     ''')
     conn.commit()
     conn.close()
 
-
 def extract_fields(text):
-    """
-    Extracts customer info from the PDF text using regular expressions and text analysis.
-    """
     # Extract Name
     name_match = re.search(r'Customer Address\s*\n([^\n]+)', text)
     name = name_match.group(1).strip() if name_match else ''
 
-    # Extract Address block (takes lines below customer name up to 'If undelivered')
+    # Extract Address block
     address_block = ''
     address_start = re.search(r'Customer Address\s*\n[^\n]+\n', text)
     if address_start:
@@ -47,17 +44,16 @@ def extract_fields(text):
             address_lines.append(line.strip())
         address_block = ', '.join(address_lines)
 
-    # Simplistic pincode extraction (six digit number)
+    # Pincode
     pincode_match = re.search(r'(\d{6})', address_block)
     pincode = pincode_match.group(1) if pincode_match else ''
 
-    # Extract city and state
+    # City & State
     city_state_match = re.search(r'([A-Za-z ]+), ([A-Za-z ]+), ' + pincode, address_block) if pincode else None
     if city_state_match:
         city = city_state_match.group(1).strip()
         state = city_state_match.group(2).strip()
     else:
-        # Fallback: get last two words before pincode in address
         parts = address_block.split(',')
         city = parts[-3].strip() if len(parts) > 2 else ''
         state = parts[-2].strip() if len(parts) > 1 else ''
@@ -70,8 +66,26 @@ def extract_fields(text):
     date_match = re.search(r'Order Date\s*([0-9.]+)', text)
     order_date = date_match.group(1) if date_match else ''
 
-    # Phone number (optional, fill with blank)
+    # Phone (blank)
     phone = ''
+    
+    # Product description and price
+    prod_desc = ""
+    price = ""
+    lines = text.split('\n')
+    for i, line in enumerate(lines):
+        # Product Description
+        if line.strip().lower().startswith("description") and i+1 < len(lines):
+            prod_desc = lines[i+1].strip()
+        # Price: look for Gross Amount or Total Amount
+        if ("gross amount" in line.lower() or "total amount" in line.lower()) and price == "":
+            j = i
+            while j+1 < len(lines):
+                j += 1
+                next_line = lines[j].strip()
+                if next_line and any(c.isdigit() for c in next_line):
+                    price = next_line
+                    break
 
     return {
         'name': name,
@@ -81,33 +95,33 @@ def extract_fields(text):
         'pincode': pincode,
         'order_no': order_no,
         'order_date': order_date,
-        'phone': phone
+        'phone': phone,
+        'product_description': prod_desc,
+        'price': price
     }
-
 
 def insert_customer(data):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute('''INSERT INTO customers (
-        name, address, city, state, pincode, order_no, order_date, phone
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?);''', (
+        name, address, city, state, pincode, order_no, order_date, phone, product_description, price
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);''', (
         data['name'], data['address'], data['city'], data['state'],
-        data['pincode'], data['order_no'], data['order_date'], data['phone']
+        data['pincode'], data['order_no'], data['order_date'], data['phone'],
+        data['product_description'], data['price']
     ))
     conn.commit()
     conn.close()
-
 
 def get_all_customers():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute('''SELECT name, address, city, state, pincode,
-                        order_no, order_date, phone FROM customers
+                        order_no, order_date, phone, product_description, price FROM customers
                  ORDER BY id DESC;''')
     rows = c.fetchall()
     conn.close()
     return rows
-
 
 def main():
     st.set_page_config(page_title='Meesho Customer App', layout='wide')
@@ -143,11 +157,12 @@ def main():
     if customers:
         st.table([{
             'Name': x[0], 'Address': x[1], 'City': x[2], 'State': x[3], 'Pincode': x[4],
-            'Order No': x[5], 'Order Date': x[6], 'Phone': x[7]
+            'Order No': x[5], 'Order Date': x[6], 'Phone': x[7],
+            'Product Description': x[8], 'Price': x[9]
         } for x in customers])
     else:
         st.info('No customer data saved yet.')
 
-
 if __name__ == '__main__':
     main()
+
